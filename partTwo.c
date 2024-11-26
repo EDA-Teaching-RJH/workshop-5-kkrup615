@@ -1,50 +1,33 @@
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/wait.h>
-int main() {
-    pid_t pid = fork();
-    if (pid == 0) {
-        // Child process
-        printf("Child process: PID = %d\n", getpid());
-        execl("/bin/ls", "ls", "-l", NULL);
-        // If execl#include <stdio.h>
-#include <unistd.h>
-#include <sys/wait.h>
+#include <sys/resource.h>
+#include <sys/time.h>
 
-void long_running_task() {
-    for (int i = 0; i < 5; i++) {
-        printf("Child working: %d\n", i);
-        sleep(1);
-    }
+void cpu_intensive_task() {
+ for (long i = 0; i < 1000000000; i++) {
+ // Perform some meaningless calculation
+ double result = 3.14159 * i;
+ }
 }
 
+
 int main() {
-    pid_t pid = fork();
-    if (pid == 0) {
-        // Child process
-        printf("Child process: PID = %d, State = Running\n", getpid());
-        long_running_task();
-    } else if (pid > 0) {
-        // Parent process
-        printf("Parent process: PID = %d, State = Waiting\n", getpid());
-        wait(NULL);
-        printf("Parent process: State = Running (after child completion)\n");
-    } else {
-        fprintf(stderr, "Fork failed\n");
-        return 1;
-    }
-    return 0;
-}() returns, it must have failed
-        perror("execl");
-        return 1;
-    } else if (pid > 0) {
-        // Parent process
-        printf("Parent process: PID = %d, Child PID = %d\n", getpid(), pid);
-        wait(NULL); // Wait for child to finish
-    } else {
-        // Fork failed
-        fprintf(stderr, "Fork failed\n");
-        return 1;
-    }
+    int priority = nice(0);
+    printf("Initial priority: %d\n", priority);
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
+    cpu_intensive_task();
+    gettimeofday(&end, NULL);
+
+    double time_taken = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+    printf("Time taken with default priority: %f seconds\n", time_taken);
+    priority = nice(10);
+    printf("New priority: %d\n", priority);
+    gettimeofday(&start, NULL);
+    cpu_intensive_task();
+    gettimeofday(&end, NULL);
+
+    time_taken = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+    printf("Time taken with lower priority: %f seconds\n", time_taken);
     return 0;
 }
